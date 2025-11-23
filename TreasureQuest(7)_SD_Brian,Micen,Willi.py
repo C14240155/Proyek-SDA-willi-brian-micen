@@ -3,7 +3,7 @@ import time
 import os
 
 # =============================================================================
-# 👤 MAHASISWA A: BAGIAN LINKED LIST (Papan Permainan)
+#   MAHASISWA A: BAGIAN LINKED LIST (Papan Permainan)
 # =============================================================================
 class Node:
     def __init__(self, position, event_type=None, description=None):
@@ -30,13 +30,13 @@ class LinkedListBoard:
             4: ("STACK", "LOOT_BOX"),
             8: ("STACK", "LOOT_BOX"),
             12: ("STACK", "LOOT_BOX"),
-            
+
             # ZONE C: QUEUE EVENTS (Kartu Nasib)
             5: ("QUEUE", "MYSTERY_CARD"),
             10: ("QUEUE", "MYSTERY_CARD"),
             14: ("QUEUE", "MYSTERY_CARD"),
         }
-        
+
         prev = None
         for i in range(1, self.size + 1):
             if i in events:
@@ -44,7 +44,7 @@ class LinkedListBoard:
                 node = Node(i, etype, desc)
             else:
                 node = Node(i)
-            
+
             if self.head is None:
                 self.head = node
             else:
@@ -66,23 +66,23 @@ class LinkedListBoard:
         current = self.head
         row = ""
         count = 0
-        
+
         while current:
             count += 1
             symbol = "[_]"
             # Icon Map
-            if current.event_type == "STATIC": symbol = "[❗]"
+            if current.event_type == "STATIC": symbol = "[❗️]"
             elif current.event_type == "STACK": symbol = "[🎒]"
-            elif current.event_type == "QUEUE": symbol = "[🃏]"
+            elif current.event_type == "QUEUE": symbol = "[🃰]"
             elif current.position == 20: symbol = "[🏁]"
-            
+
             occupant = ""
             for p_name, p_data in players.items():
                 if p_data["pos"] == current.position:
                     occupant += p_data["icon"]
-            
+
             row += f"{current.position:02d}{symbol}{occupant:<2} -> "
-            
+
             if count % 5 == 0:
                 print(row)
                 print("       ⬇️")
@@ -92,7 +92,7 @@ class LinkedListBoard:
 
 
 # =============================================================================
-# 👤 MAHASISWA B: BAGIAN STACK (Inventory & Undo)
+#   MAHASISWA B: BAGIAN STACK (Inventory & Undo)
 # =============================================================================
 class Stack:
     def __init__(self):
@@ -115,7 +115,7 @@ class Stack:
         return len(self.data) == 0
 
 # =============================================================================
-# 👤 MAHASISWA C: BAGIAN QUEUE (Giliran & Deck Kartu)
+#   MAHASISWA C: BAGIAN QUEUE (Giliran & Deck Kartu)
 # =============================================================================
 class Queue:
     def __init__(self, items=None):
@@ -139,6 +139,9 @@ class Queue:
     def front(self):
         return self.data[0] if not self.is_empty() else None
 
+    def is_empty(self):
+        return len(self.data) == 0
+
 # =============================================================================
 # 🎮 GAME CONTROLLER
 # =============================================================================
@@ -146,7 +149,7 @@ class Game:
     def __init__(self, player_names):
         # SETUP A
         self.board = LinkedListBoard(20)
-        
+
         # SETUP C
         self.turn_queue = Queue(player_names)
         self.card_deck = Queue([
@@ -156,7 +159,7 @@ class Game:
             "KARTU: TUKAR POSISI",
             "KARTU: LEMPAR DADU LAGI"
         ])
-        
+
         # SETUP B
         self.players = {}
         icons = ["🔴", "🔵", "🟢"]
@@ -168,7 +171,7 @@ class Game:
                 "inventory": Stack(),
                 "shield": False
             }
-        
+
         self.skipped = set()
         self.game_finished = False
 
@@ -180,7 +183,7 @@ class Game:
 
         # --- LOGIC C (Giliran) ---
         player = self.turn_queue.front()
-        
+
         # 1. Cek apakah pemain sedang di-SKIP?
         if player in self.skipped:
             print(f"\n⛔ {player} sedang di-SKIP giliran ini.")
@@ -191,7 +194,7 @@ class Game:
 
         p_data = self.players[player]
         print(f"\n🎲 GILIRAN: {player} {p_data['icon']}")
-        
+
         # --- LOGIC B (Inventory) ---
         self.manage_inventory_stack(player)
 
@@ -223,20 +226,20 @@ class Game:
 
         etype = node.event_type
         desc = node.description
-        
+
         # 1. EVENT STATIS (Tugas A)
         if etype == "STATIC":
             print(f"   ⚠️ EVENT PAPAN: {desc}")
             if desc == "MAJU 2":
                 self.players[player]["pos"] = min(20, pos + 2)
-            
+
             elif desc == "MUNDUR 3":
                 if self.players[player]["shield"]:
                     print("      🛡️ Shield aktif! Batal mundur.")
                     self.players[player]["shield"] = False
                 else:
                     self.players[player]["pos"] = max(1, pos - 3)
-            
+
             elif desc == "UNDO":
                 last = self.players[player]["history"].pop()
                 if last: self.players[player]["pos"] = last
@@ -255,10 +258,10 @@ class Game:
 
         # 3. EVENT QUEUE (Tugas C)
         elif etype == "QUEUE":
-            print(f"   🃏 {desc}: Mengambil Kartu Nasib!")
+            print(f"   🃰 {desc}: Mengambil Kartu Nasib!")
             card = self.card_deck.rotate()
             print(f"      📜 {card}")
-            
+
             if "MAJU" in card:
                 self.players[player]["pos"] = min(20, self.players[player]["pos"] + 3)
             elif "MUNDUR" in card:
@@ -280,7 +283,7 @@ class Game:
             if choice == 'y':
                 used = stack.pop()
                 print(f"      ✨ Menggunakan {used}!")
-                
+
                 if used == "Boost":
                     self.players[player]["pos"] = min(20, self.players[player]["pos"] + 3)
                     print("      -> Maju 3 langkah!")
@@ -303,7 +306,7 @@ class Game:
 # =============================================================================
 if __name__ == "__main__":
     game = Game(["Brian", "Micen", "William"])
-    
+
     while not game.game_finished:
         game.clear_screen()
         game.board.display_board(game.players)
