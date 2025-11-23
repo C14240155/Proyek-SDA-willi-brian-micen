@@ -175,8 +175,8 @@ class Game:
         self.skipped = set()
         self.game_finished = False
 
-    def clear_screen(self):
-        os.system('cls' if os.name == 'nt' else 'clear')
+    #def clear_screen(self):
+        #os.system('cls' if os.name == 'nt' else 'clear')
 
     def play_turn(self):
         if self.game_finished: return
@@ -308,7 +308,7 @@ if __name__ == "__main__":
     game = Game(["Brian", "Micen", "William"])
 
     while not game.game_finished:
-        game.clear_screen()
+        #game.clear_screen()
         game.board.display_board(game.players)
         game.play_turn()
         time.sleep(2)
