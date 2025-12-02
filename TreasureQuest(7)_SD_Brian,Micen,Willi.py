@@ -28,7 +28,6 @@ class LinkedListBoard:
 
             # ZONE B: STACK EVENTS (Loot Box / Inventory)
             4: ("STACK", "LOOT_BOX"),
-            8: ("STACK", "LOOT_BOX"),
             12: ("STACK", "LOOT_BOX"),
 
             # ZONE C: QUEUE EVENTS (Kartu Nasib)
@@ -252,7 +251,7 @@ class Game:
         # 2. EVENT STACK (Tugas B)
         elif etype == "STACK":
             print(f"   🎒 {desc}: Menemukan Item Box!")
-            item = random.choice(["Shield", "Boost", "SwapPotion"])
+            item = random.choice(["Shield", "Boost"])
             self.players[player]["inventory"].push(item)
             print(f"      -> {item} disimpan ke Stack Inventory.")
 
@@ -270,9 +269,13 @@ class Game:
                 others = [p for p in self.players if p != player]
                 if others:
                     target = random.choice(others)
-                    self.players[player]["pos"], self.players[target]["pos"] = \
-                    self.players[target]["pos"], self.players[player]["pos"]
-                    print(f"      -> Tukar posisi dengan {target}")
+                    
+                    pos_me = self.players[player]["pos"]
+                    pos_target= self.players[target]["pos"]
+
+                    self.players[player]["pos"] ,self.players[target]["pos"] = self.players[target]["pos"], self.players[player]["pos"]
+                    print(f"Tukar posisi dengan {target}!")
+                    print(f"      -> {player} ke kotak {self.players[player]['pos']}, {target} ke kotak {self.players[target]['pos']}")
 
     def manage_inventory_stack(self, player):
         stack = self.players[player]["inventory"]
@@ -290,14 +293,6 @@ class Game:
                 elif used == "Shield":
                     self.players[player]["shield"] = True
                     print("      -> Shield ON!")
-                elif used == "SwapPotion":
-                    # ✅ FIX: Logic SwapPotion yang benar
-                    others = [p for p in self.players if p != player]
-                    if others:
-                        target = random.choice(others)
-                        self.players[player]["pos"], self.players[target]["pos"] = \
-                        self.players[target]["pos"], self.players[player]["pos"]
-                        print(f"      🔄 SWAP! Bertukar posisi dengan {target}!")
             else:
                 print("      -> Item disimpan.")
 
