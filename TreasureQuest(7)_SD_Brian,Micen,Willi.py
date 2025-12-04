@@ -375,6 +375,7 @@ class Game:
                             print(f"      -> SWAP! Bertukar dengan ({target})!")
                             print(f"         (Sekarang di posisi: {self.players[player]['pos']})")
                             self.check_node_event(player, self.players[player]["pos"])
+                            self.check_node_event(target, self.players[target]["pos"])
                     else:
                         print("      -> Tidak ada lawan.")
             else:
