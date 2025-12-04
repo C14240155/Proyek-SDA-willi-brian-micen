@@ -308,12 +308,16 @@ class Game:
                         self.players[target_p]["shield"] = False # Shield hancur
                     else:
                         # Lakukan Swap
-                        self.players[player]["pos"], self.players[target_p]["pos"] = \
-                        self.players[target_p]["pos"], self.players[player]["pos"]
+                        my_position = self.players[player]["pos"]
+                        enemy_position = self.players[target_p]["pos"]
+
+                        self.players[player]["pos"] = enemy_position
+                        self.players[target_p]["pos"] = my_position
                         
                         print(f"   -> 🔄 TUKAR! Bertukar dengan ({target_p})!")
                         print(f"      (Kamu ke {self.players[player]['pos']}, Dia ke {self.players[target_p]['pos']})")
                         self.check_node_event(player, self.players[player]["pos"])
+                        self.check_node_event(target_p, self.players[target_p]["pos"])
 
             elif "LAGI" in card:
                 print("   -> LEMPAR DADU LAGI!")
@@ -369,9 +373,12 @@ class Game:
                             self.players[target]["shield"] = False # Shield hancur
                         else:
                             # Lakukan Swap
-                            self.players[player]["pos"], self.players[target]["pos"] = \
-                            self.players[target]["pos"], self.players[player]["pos"]
-                            
+                            my_positionSwap = self.players[player]["pos"]
+                            enemy_positionSwap = self.players[target]["pos"]
+
+                            self.players[player]["pos"] = enemy_positionSwap
+                            self.players[target]["pos"] = my_positionSwap
+
                             print(f"      -> SWAP! Bertukar dengan ({target})!")
                             print(f"         (Sekarang di posisi: {self.players[player]['pos']})")
                             self.check_node_event(player, self.players[player]["pos"])
