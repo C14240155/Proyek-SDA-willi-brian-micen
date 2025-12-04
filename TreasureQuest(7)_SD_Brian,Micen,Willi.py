@@ -85,7 +85,7 @@ class LinkedListBoard:
                 symbol = "[🏁]"
             
             occupant = ""
-            for player_data in players.items():
+            for player_names, player_data in players.items():
                 if player_data["pos"] == current.position:
                     occupant += player_data["icon"]
             
