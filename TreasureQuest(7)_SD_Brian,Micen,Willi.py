@@ -3,12 +3,12 @@ import time
 import os
 
 # =============================================================================
-# 👤 MAHASISWA A: BAGIAN LINKED LIST (Papan Permainan)
+# MICEN: BAGIAN LINKED LIST (Papan Permainan)
 # =============================================================================
 class Node:
     def __init__(self, position, event_type=None, description=None):
         self.position = position
-        self.event_type = event_type # STATIC, STACK, atau QUEUE
+        self.event_type = event_type # NODE, STACK, atau QUEUE
         self.description = description
         self.next = None
 
@@ -19,49 +19,54 @@ class LinkedListBoard:
         self._build_board()
 
     def _build_board(self):
-        events = {
-            # --- ZONE A: STATIC EVENTS ---
-            3: ("STATIC", "MAJU 2"),
-            6: ("STATIC", "MUNDUR 3"),
-            15: ("STATIC", "UNDO"),
-            18: ("STATIC", "SKIP"),
-
-            # --- ZONE B: STACK EVENTS (LOOT) ---
-            4: ("STACK", "LOOT_BOX"),
-            8: ("STACK", "LOOT_BOX"),
-            12: ("STACK", "LOOT_BOX"),
-            
-            # --- ZONE C: QUEUE EVENTS (CARD) ---
-            5: ("QUEUE", "MYSTERY_CARD"),
-            10: ("QUEUE", "MYSTERY_CARD"),
-            14: ("QUEUE", "MYSTERY_CARD"),
-        }
-        
-        prev = None
+        curr = None
         for i in range(1, self.size + 1):
-            if i in events:
-                etype, desc = events[i]
-                node = Node(i, etype, desc)
-            else:
-                node = Node(i)
+            # Default node kosong
+            new_node = Node(i)
             
+            # --- Zone A: Papan ---
+            if i == 3:
+                new_node.event_type = "NODE"
+                new_node.description = "MAJU 2" 
+            elif i == 6:
+                new_node.event_type = "NODE"
+                new_node.description = "MUNDUR 3"
+            elif i == 15:
+                new_node.event_type = "NODE"
+                new_node.description = "UNDO"
+            elif i == 18:
+                new_node.event_type = "NODE"
+                new_node.description = "SKIP"
+            
+            # --- Zone B: Item (Stack) ---
+            elif i in [4, 8, 12]:
+                new_node.event_type = "POWERUPS"
+                new_node.description = "LOOT_BOX"
+            
+            # --- Zone C: Kartu (Queue) ---
+            elif i in [7, 10, 14]: 
+                new_node.event_type = "CARDS"
+                new_node.description = "MYSTERY_CARD"
+
+            # Nyambungin node (Linked List logic)
             if self.head is None:
-                self.head = node
+                self.head = new_node
+                curr = new_node
             else:
-                prev.next = node
-            prev = node
+                curr.next = new_node
+                curr = new_node
 
     def get_node(self, position):
-        current = self.head
-        while current:
-            if current.position == position:
-                return current
-            current = current.next
+        curr = self.head
+        while curr:
+            if curr.position == position:
+                return curr
+            curr = curr.next
         return None
 
     def display_board(self, players):
         print("\n" + "="*65)
-        print("🗺  PETA FINAL (Linked List + Stack Loot + Queue Deck)")
+        print("TREASURE QUEST MAP")
         print("="*65)
         current = self.head
         row = ""
@@ -69,17 +74,20 @@ class LinkedListBoard:
         
         while current:
             count += 1
-            # Visualisasi
             symbol = "[_]"
-            if current.event_type == "STATIC": symbol = "[❗]"
-            elif current.event_type == "STACK": symbol = "[🎒]"
-            elif current.event_type == "QUEUE": symbol = "[🃏]"
-            elif current.position == 20: symbol = "[🏁]"
+            if current.event_type == "NODE": 
+                symbol = "[❓]"
+            elif current.event_type == "POWERUPS": 
+                symbol = "[⬆️ ]"
+            elif current.event_type == "CARDS": 
+                symbol = "[🃏]"
+            elif current.position == 20: 
+                symbol = "[🏁]"
             
             occupant = ""
-            for p_name, p_data in players.items():
-                if p_data["pos"] == current.position:
-                    occupant += p_data["icon"]
+            for player_name, player_data in players.items():
+                if player_data["pos"] == current.position:
+                    occupant += player_data["icon"]
             
             row += f"{current.position:02d}{symbol}{occupant:<2} -> "
             
@@ -90,9 +98,8 @@ class LinkedListBoard:
             current = current.next
         print("    [FINISH]")
 
-
 # =============================================================================
-# 👤 MAHASISWA B: BAGIAN STACK (Inventory & Undo)
+# WILLI: BAGIAN STACK (Inventory & Undo)
 # =============================================================================
 class Stack:
     def __init__(self):
@@ -115,7 +122,7 @@ class Stack:
         return len(self.data) == 0
 
 # =============================================================================
-# 👤 MAHASISWA C: BAGIAN QUEUE (Giliran & Deck Kartu)
+# BRIAN: BAGIAN QUEUE (Giliran & Deck Kartu)
 # =============================================================================
 class Queue:
     def __init__(self, items=None):
@@ -145,10 +152,11 @@ class Queue:
 # =============================================================================
 # 🎮 GAME CONTROLLER (LOGIC GABUNGAN)
 # =============================================================================
+# MICEN, WILLI, BRIAN
 class Game:
-    def __init__(self, player_names):
+    def __init__(self, player_names): #MICEN
         self.board = LinkedListBoard(20)
-        self.turn_queue = Queue(player_names)
+        self.turn_queue = Queue(player_names) #BRIAN
         self.card_deck = Queue([
             "KARTU: MAJU 3 LANGKAH",
             "KARTU: MUNDUR 2 LANGKAH",
@@ -169,11 +177,7 @@ class Game:
             }
         
         self.skipped = set()
-        self.game_finished = False
-
-    def clear_screen(self):
-        # os.system('cls' if os.name == 'nt' else 'clear')
-        pass 
+        self.game_finished = False 
 
     def play_turn(self):
         if self.game_finished: return
@@ -188,20 +192,20 @@ class Game:
             time.sleep(1)
             return
 
-        p_data = self.players[player]
-        print(f"\n🎲 GILIRAN: {player} {p_data['icon']}")
+        player_data = self.players[player]
+        print(f"\n🎲 GILIRAN: {player} {player_data['icon']}")
         
         # Logic B: Item
-        self.manage_inventory_stack(player)
+        self.manage_inventory(player) #WILLI
 
         input("   [ENTER] Lempar dadu...")
         dice = random.randint(1, 6)
         print(f"   🎲 Dadu: {dice}")
 
-        p_data["history"].push(p_data["pos"])
+        player_data["history"].push(player_data["pos"])
 
-        new_pos = min(20, p_data["pos"] + dice)
-        p_data["pos"] = new_pos
+        new_pos = min(20, player_data["pos"] + dice)
+        player_data["pos"] = new_pos
         print(f"   🏃 Maju ke kotak {new_pos}")
 
         # --- CEK NODE (REKURSIF) ---
@@ -215,61 +219,67 @@ class Game:
 
         self.turn_queue.rotate()
 
-    def check_node_event(self, player, pos):
+    def check_node_event(self, player, pos): #MICEN
         # Base Case: Posisi di luar papan atau null
-        if pos > 20 or pos < 1: return
+        if pos > 20 or pos < 1: 
+            return
         
         node = self.board.get_node(pos)
         if not node or not node.event_type:
             return
 
-        etype = node.event_type
+        eventType = node.event_type
         desc = node.description
         
         # 1. EVENT STATIS
-        if etype == "STATIC":
-            print(f"   ⚠ EVENT PAPAN: {desc}")
+        if eventType == "NODE":
+            print(f"   EVENT PAPAN: {desc}")
             if desc == "MAJU 2":
                 new_pos = min(20, pos + 2)
                 self.players[player]["pos"] = new_pos
-                print(f"   -> 🚀 Meluncur ke kotak {new_pos}")
+                print(f"   -> ⏩ Meluncur ke kotak {new_pos}")
                 self.check_node_event(player, new_pos) # <--- REKURSI
 
             elif desc == "MUNDUR 3":
                 if self.players[player]["shield"]:
-                    print("     🛡 Shield aktif! Batal mundur.")
+                    print("     🛡️ Shield sedang aktif! Batal mundur.")
                     self.players[player]["shield"] = False
                 else:
                     new_pos = max(1, pos - 3)
                     self.players[player]["pos"] = new_pos
-                    print(f"   -> 🔻 Tergelincir ke kotak {new_pos}")
+                    print(f"   -> ⏪ Termundur ke kotak {new_pos}")
                     self.check_node_event(player, new_pos) # <--- REKURSI
 
             elif desc == "UNDO":
-                last = self.players[player]["history"].pop()
-                if last: 
-                    self.players[player]["pos"] = last
-                    print(f"   -> 🔙 UNDO! Kembali ke posisi {last}")
-                    self.check_node_event(player, last) # <--- REKURSI
+                # --- LOGIKA BARU: SHIELD VS UNDO ---
+                if self.players[player]["shield"]:
+                    print("     🛡️ Shield aktif! Selamat dari efek UNDO.")
+                    self.players[player]["shield"] = False 
                 else:
-                    print("   -> History kosong. Tetap di posisi.")
+                    last_position = self.players[player]["history"].pop()
+                    if last_position: 
+                        self.players[player]["pos"] = last_position
+                        print(f"   -> UNDO! Balik ke posisi {last_position}")
+                        self.check_node_event(player, last_position)
+                    else:
+                        print("   -> History kosong.")
 
             elif desc == "SKIP":
                 self.skipped.add(player)
-                print(f"   -> 🚫 {player} akan di-SKIP 1x di putaran selanjutnya.") 
+                print(f"   -> 🚫 {player} akan di-SKIP 1x di giliran selanjutnya.") 
 
         # 2. EVENT STACK
-        elif etype == "STACK":
-            print(f"   🎒 {desc}: Menemukan Item Box!")
+        elif eventType == "POWERUPS": #WILLI
+            print(f"   🎒 {desc}: Menemukan Item!")
             item = random.choice(["Shield", "Boost", "Swap"])
             self.players[player]["inventory"].push(item)
-            print(f"   -> **{item}** disimpan ke Stack Inventory.")
+            print(f"   -> **{item}** disimpan ke Inventory.")
 
         # 3. EVENT QUEUE
-        elif etype == "QUEUE":
-            print(f"   🃏 {desc}: Mengambil Kartu Nasib!")
+        elif eventType == "CARDS": #BRIAN
+            print(f"   🃏 {desc}: Mengambil Kartu Misteri!")
             card = self.card_deck.rotate()
-            print(f"   -> 📜 {card}")
+            print(f"   -> 🃏 {card}")
             
             target_pos = self.players[player]["pos"]
             pos_changed = False
@@ -283,12 +293,28 @@ class Game:
             elif "TUKAR" in card:
                 others = [p for p in self.players if p != player]
                 if others:
-                    target_p = random.choice(others)
-                    self.players[player]["pos"], self.players[target_p]["pos"] = \
-                    self.players[target_p]["pos"], self.players[player]["pos"]
-                    print(f"   -> 🔄 Tukar posisi dengan {target_p} (Kamu di {self.players[player]['pos']})")
-                    # Cek event di posisi baru
-                    self.check_node_event(player, self.players[player]["pos"]) # <--- REKURSI
+                    target_p = others[0]
+                    max_pos = self.players[target_p]["pos"]
+                    
+                    for musuh in others:
+                        pos_musuh = self.players[musuh]["pos"]
+                        if pos_musuh > max_pos:
+                            max_pos = pos_musuh
+                            target_p = musuh
+
+                    if self.players[target_p]["shield"]:
+                        print(f"   -> 🚫 TUKAR GAGAL! {target_p} menggunakan SHIELD!")
+                        print(f"      (Shield {target_p} hancur)")
+                        self.players[target_p]["shield"] = False # Shield hancur
+                    else:
+                        # Lakukan Swap
+                        self.players[player]["pos"], self.players[target_p]["pos"] = \
+                        self.players[target_p]["pos"], self.players[player]["pos"]
+                        
+                        print(f"   -> 🔄 TUKAR! Bertukar dengan ({target_p})!")
+                        print(f"      (Kamu ke {self.players[player]['pos']}, Dia ke {self.players[target_p]['pos']})")
+                        self.check_node_event(player, self.players[player]["pos"])
+
             elif "LAGI" in card:
                 print("   -> LEMPAR DADU LAGI!")
                 # Trik: Ambil pemain dari belakang queue, taruh depan lagi
@@ -300,11 +326,11 @@ class Game:
                 self.players[player]["pos"] = target_pos
                 self.check_node_event(player, target_pos) # <--- REKURSI
 
-    def manage_inventory_stack(self, player):
+    def manage_inventory(self, player): #WILLI
         stack = self.players[player]["inventory"]
         if not stack.is_empty():
             top_item = stack.peek()
-            print(f"   🎒 Tas (Stack Teratas): [{top_item}]")
+            print(f"   🎒 Inventory : [{top_item}]")
             
             try:
                 choice = input("      Gunakan Item? (y/n): ").lower()
@@ -318,24 +344,39 @@ class Game:
                 if used == "Boost":
                     self.players[player]["pos"] = min(20, self.players[player]["pos"] + 3)
                     print(f"      -> Maju 3 langkah! Posisi: {self.players[player]['pos']}")
-                    # Cek event setelah boost
                     self.check_node_event(player, self.players[player]["pos"])
 
                 elif used == "Shield":
                     self.players[player]["shield"] = True
-                    print("      -> Shield ON! Akan melindungi dari 1x event mundur.")
+                    print("      -> Shield ON! Akan melindungi dari 1x event mundur, undo, dan swap.")
 
                 elif used == "Swap":
                     others = [p for p in self.players if p != player]
                     if others:
-                        target = random.choice(others)
-                        self.players[player]["pos"], self.players[target]["pos"] = \
-                        self.players[target]["pos"], self.players[player]["pos"]
-                        print(f"      -> Tukar posisi dengan {target}! Posisi: {self.players[player]['pos']}")
-                        # Cek event setelah swap
-                        self.check_node_event(player, self.players[player]["pos"])
+                        # --- LOGIKA PENGGANTI LAMBDA (MANUAL) ---
+                        target = others[0]
+                        max_pos = self.players[target]["pos"]
+                        
+                        for musuh in others:
+                            pos_musuh = self.players[musuh]["pos"]
+                            if pos_musuh > max_pos:
+                                max_pos = pos_musuh
+                                target = musuh
+                        
+                        if self.players[target]["shield"]:
+                            print(f"      -> 🚫 SWAP GAGAL! {target} terlindungi SHIELD!")
+                            print(f"         (Shield {target} hancur, Item Swap terpakai)")
+                            self.players[target]["shield"] = False # Shield hancur
+                        else:
+                            # Lakukan Swap
+                            self.players[player]["pos"], self.players[target]["pos"] = \
+                            self.players[target]["pos"], self.players[player]["pos"]
+                            
+                            print(f"      -> SWAP! Bertukar dengan ({target})!")
+                            print(f"         (Sekarang di posisi: {self.players[player]['pos']})")
+                            self.check_node_event(player, self.players[player]["pos"])
                     else:
-                        print("      -> Tidak ada pemain lain untuk ditukar.")
+                        print("      -> Tidak ada lawan.")
             else:
                 print("      -> Item disimpan.")
 
@@ -346,9 +387,8 @@ if __name__ == "__main__":
     game = Game(["Brian", "Micen", "William"])
     
     while not game.game_finished:
-        #game.clear_screen()
         game.board.display_board(game.players)
         game.play_turn()
         time.sleep(1) 
-    time.sleep(2)
+    
     print("\nPermainan Selesai.")
